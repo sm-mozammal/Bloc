@@ -1,70 +1,65 @@
-import 'dart:io';
 
+import 'package:bloc_practice/internet_state.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'internet_bloc.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Image Picker Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: MyHomePage(),
+        return MaterialApp(
+          title: 'Image Picker Demo',
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+          ),
+          home: BlocProvider(
+              create: (context) => InternetBloc(),
+              child: const MyHomePage()),
     );
   }
 }
 
+
+
 class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
+
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  File? _image;
-
-  Future _getImage(ImageSource source) async {
-    final pickedImage = await ImagePicker().pickImage(source: source);
-
-    if (pickedImage != null) {
-      setState(() {
-        _image = File(pickedImage.path);
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Image Picker Demo'),
+        title: const Text('Bloc Practice'),
       ),
-      body: Center(
-        child: _image == null
-            ? Text('No image selected.')
-            : Image.file(_image!),
-      ),
-      floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FloatingActionButton(
-            onPressed: () => _getImage(ImageSource.gallery),
-            tooltip: 'Pick Image from Gallery',
-            child: Icon(Icons.photo),
-          ),
-          SizedBox(width: 16),
-          FloatingActionButton(
-            onPressed: () => _getImage(ImageSource.camera),
-            tooltip: 'Take a Photo',
-            child: Icon(Icons.camera_alt),
-          ),
-        ],
-      ),
+      body: BlocBuilder<InternetBloc, InternetState>(
+        builder: (context, state) {
+          if(state is InternetGainedState){
+            return const Center(
+              child:  Text('Connected'),
+            );
+          }else if(state is InternetLostState){
+            return const Center(
+              child:  Text('Not connected'),
+            );
+          }else {
+            return const Center(
+              child:  Text('Loadding'),
+            );
+          }
+
+        }
+      )
     );
   }
 }
